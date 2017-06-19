@@ -1,0 +1,38 @@
+#We target overlapping paired ends for sequencing, so an average fragement size of 220 bp for use with 150 bp PE sequencing
+#Step 1:  Host subtraction using BMTagger -- copy and paste to new files to run, please change out email address, job name, error message, partition, account, file names, and output name
+
+#!/bin/bash -l
+#
+#SBATCH --mail-user=youremail@wherever.com
+#SBATCH --mail-type=ALL
+#SBATCH --job-name=host_subtract
+#SBATCH --error=host_subtraction.err
+#SBATCH --partition=ofyourchoice
+#SBATCH --account=youraccount
+
+module load blast srprism bmtools
+
+cwd=$(pwd)
+
+bmtagger.sh -b /path/to/database/database.bitmask -x /path/to/database/human/database.srprism -q1 -1 $cwd/mysequence_R1_001.fastq -2 $cwd/mysequence_R2_001.fastq -o mysampleid_host 
+
+#Step 1, part 2
+
+
+
+#!/bin/bash -l
+#
+#SBATCH --mail-user=youremail@wherever.com
+#SBATCH --mail-type=ALL
+#SBATCH --job-name=host_subtract2
+#SBATCH --error=host_subtraction2.err
+#SBATCH --partition=ofyourchoice
+#SBATCH --account=youraccount
+
+module load java bbmap
+
+cwd=$(pwd)
+
+filterbyname.sh in=$cwdmysequence_R1_001.fastq in2=$cwd/mysequence_R2_001.fastq out=$cwd/sampleid_R1_nohuman.fastq out2=$cwd/sampleid_R2_nohuman.fastq names=mysampleid_host include=f
+
+#Step 2:  Merge paired ends using FLASH
