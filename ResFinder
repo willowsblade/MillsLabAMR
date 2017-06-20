@@ -1,4 +1,6 @@
 #We target overlapping paired ends for sequencing, so an average fragement size of 220 bp for use with 150 bp PE sequencing
+#We use a computational cluster that relies on a slurm scheduler, batch files are formatted accordingly
+#For running sequencing data from more than 1 sample at a time, use array submission.  See example array if you need help with this.
 #Step 1:  Host subtraction using BMTagger -- copy and paste to new files to run, please change out email address, job name, error message, partition, account, file names, and output name
 
 #!/bin/bash -l
@@ -33,6 +35,22 @@ module load java bbmap
 
 cwd=$(pwd)
 
-filterbyname.sh in=$cwdmysequence_R1_001.fastq in2=$cwd/mysequence_R2_001.fastq out=$cwd/sampleid_R1_nohuman.fastq out2=$cwd/sampleid_R2_nohuman.fastq names=mysampleid_host include=f
+filterbyname.sh in=$cwd/mysequence_R1_001.fastq in2=$cwd/mysequence_R2_001.fastq out=$cwd/sampleid_R1_nohuman.fastq out2=$cwd/sampleid_R2_nohuman.fastq names=mysampleid_host include=f
 
-#Step 2:  Merge paired ends using FLASH
+
+#Step 2:  Assemble the reads using MEGAHit
+
+#!/bin/bash -l
+#
+#SBATCH --mail-user=youremail@wherever.com
+#SBATCH --mail-type=ALL
+#SBATCH --job-name=megahit_assembly
+#SBATCH --error=megahit_assembly.err
+#SBATCH --partition=ofyourchoice
+#SBATCH --account=youraccount
+
+module load bio
+
+cwd=$(pwd)
+
+megahit -1 $cwd/sampleid_R1_nohuman.fastq -2 $cwd/sampleid_R2_nohuman.fastq -o sampleid.megaHIT
